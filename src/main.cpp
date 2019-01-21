@@ -3,25 +3,27 @@
 #include <SoftwareSerial.h>
 #include <DFRobotDFPlayerMini.h>
 
-#define DEBUG //TODO comment this line for producion mode
+// TODO закомментировать эту строку перед заливкой на
+// «боевую» сборку
+#define DEBUG
 
-// Pins to talk to DFPlayer
-#define RX_PIN 8
-#define TX_PIN 7
+// Пины для общения с DFPlayer
+#define RX_PIN 8 // к пину TX на DFP
+#define TX_PIN 7 // к пину RX на DFP
 
-// Buttons to switch tracks
-#define NEXT_RECORD_PIN 3
-#define PREV_RECORD_PIN 13
+// Кнопки переключения записей
+#define NEXT_RECORD_PIN 3 // следующая
+#define PREV_RECORD_PIN 13 // предыдущая
 
-// Encoder pins
+// Пины энкодера (достаточно одного)
 #define ENCODER_FW 2
 #define ENCODER_BW 15
 
-// Delay between start/stop of handle rotating and start/stop
-// of music playing (milliseconds)
+// Задержка между началом/концом вращения ручки
+// и началом/концом воспроизведения (миллисекунды)
 #define PAUSE 300
 
-// Sort of debug logging
+// Отладочное логирование
 #ifdef DEBUG
 #define debug(msg) Serial.println(msg)
 #else
@@ -31,14 +33,14 @@
 SoftwareSerial dfplayerSerial(RX_PIN, TX_PIN);
 DFRobotDFPlayerMini myDFPlayer;
 
-volatile int currentRecord = 1; // DFPlayer starts track numbers from 1
+volatile int currentRecord = 1; // Кажется, DFPlayer начинает нумерацию записей с 1
 int recordsCount;
 bool isPlaying = false;
 
 volatile unsigned long lastEncoderSignal = 0;
 
 /**
- * Handle next record button
+ * Обработчик на кнопку следующей записи
  **/
 void nextRecord()
 {
@@ -54,7 +56,7 @@ void nextRecord()
 }
 
 /**
- * Handle previous record button
+ * Обработчик на кнопку предыдущей записи
  **/
 void prevRecord()
 {
@@ -70,7 +72,7 @@ void prevRecord()
 }
 
 /**
- * Handle rotation of encoder (don't care about direction)
+ * Обработчик вращения энкодера (не учитывает направление)
  **/
 void encoderChanged()
 {
@@ -104,7 +106,7 @@ void setup()
     debug("DFPlayer Mini online.");
   }
 
-  myDFPlayer.volume(10); //TODO set volume via variable resistor
+  myDFPlayer.volume(10); //TODO сделать настройку громкости через переменный резистор
   recordsCount = myDFPlayer.readFileCounts();
   debug("Found " + String(recordsCount) + " records on SD card");
 
