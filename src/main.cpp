@@ -7,16 +7,19 @@
 // «боевую» сборку
 #define DEBUG
 
+// Светодиод успешного запуска
+#define HEALTH_CHECK_LED 12
+
 // Пины для общения с DFPlayer
 #define RX_PIN 8 // к пину TX на DFP
 #define TX_PIN 7 // к пину RX на DFP
 
 // Кнопки переключения записей
-#define NEXT_RECORD_PIN 3 // следующая
+#define NEXT_RECORD_PIN 2  // следующая
 #define PREV_RECORD_PIN 13 // предыдущая
 
 // Пины энкодера (достаточно одного)
-#define ENCODER_FW 2
+#define ENCODER_FW 3
 #define ENCODER_BW 15
 
 // Задержка между началом/концом вращения ручки
@@ -50,7 +53,7 @@ void nextRecord()
   }
   else
   {
-    currentRecord = 1;
+    currentRecord = 0;
   }
   debug("Switched to next track " + String(currentRecord));
 }
@@ -60,7 +63,7 @@ void nextRecord()
  **/
 void prevRecord()
 {
-  if (currentRecord > 1)
+  if (currentRecord > 0)
   {
     currentRecord--;
   }
@@ -76,8 +79,7 @@ void prevRecord()
  **/
 void encoderChanged()
 {
-  lastEncoderSignal = micros();
-  debug("Last encoder signal registered on " + String(lastEncoderSignal));
+  lastEncoderSignal = millis();
 }
 
 void setup()
@@ -90,6 +92,8 @@ void setup()
   pinMode(NEXT_RECORD_PIN, INPUT);
   pinMode(PREV_RECORD_PIN, INPUT);
 
+  pinMode(HEALTH_CHECK_LED, OUTPUT);
+
   debug("Initializing DFPLayer");
   if (!myDFPlayer.begin(dfplayerSerial))
   {
@@ -98,15 +102,19 @@ void setup()
     debug("2.Please insert the SD card!");
     while (true)
     {
+      digitalWrite(HEALTH_CHECK_LED, HIGH);
+      delay(200);
+      digitalWrite(HEALTH_CHECK_LED, LOW);
       delay(1000);
     };
   }
   else
   {
     debug("DFPlayer Mini online.");
+    digitalWrite(HEALTH_CHECK_LED, HIGH);
   }
 
-  myDFPlayer.volume(10); //TODO сделать настройку громкости через переменный резистор
+  myDFPlayer.volume(30); //TODO сделать настройку громкости через переменный резистор
   recordsCount = myDFPlayer.readFileCounts();
   debug("Found " + String(recordsCount) + " records on SD card");
 
@@ -117,14 +125,12 @@ void setup()
   //attachInterrupt(ENCODER_BW, encoderChanged, CHANGE);
 }
 
-unsigned long currentMillis;
 unsigned long pause;
 
 void loop()
 {
- currentMillis = millis();
-  pause = currentMillis - lastEncoderSignal;
-  debug("Current millis " + String(currentMillis) + ", last encoder signal at " + String(lastEncoderSignal) + ", pause is " + String(pause));
+  // TODO учесть момент переполнения счётчика миллисекунд
+  pause = millis() - lastEncoderSignal;
   if (pause > PAUSE)
   {
     if (isPlaying)
