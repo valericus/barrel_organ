@@ -45,14 +45,10 @@ volatile unsigned long lastEncoderSignal = 0;
 /**
  * Обработчик на кнопку следующей записи
  **/
-void nextRecord()
-{
-  if (currentRecord < recordsCount - 1)
-  {
+void nextRecord() {
+  if (currentRecord < recordsCount - 1) {
     currentRecord++;
-  }
-  else
-  {
+  } else {
     currentRecord = 0;
   }
   debug("Switched to next track " + String(currentRecord));
@@ -61,14 +57,10 @@ void nextRecord()
 /**
  * Обработчик на кнопку предыдущей записи
  **/
-void prevRecord()
-{
-  if (currentRecord > 0)
-  {
+void prevRecord() {
+  if (currentRecord > 0) {
     currentRecord--;
-  }
-  else
-  {
+  } else {
     currentRecord = recordsCount + 1;
   }
   debug("Switched to prev track " + String(currentRecord));
@@ -77,13 +69,11 @@ void prevRecord()
 /**
  * Обработчик вращения энкодера (не учитывает направление)
  **/
-void encoderChanged()
-{
+void encoderChanged() {
   lastEncoderSignal = millis();
 }
 
-void setup()
-{
+void setup() {
   dfplayerSerial.begin(9600);
 #ifdef DEBUG
   Serial.begin(9600);
@@ -95,21 +85,17 @@ void setup()
   pinMode(HEALTH_CHECK_LED, OUTPUT);
 
   debug("Initializing DFPLayer");
-  if (!myDFPlayer.begin(dfplayerSerial))
-  {
+  if (!myDFPlayer.begin(dfplayerSerial)) {
     debug("Unable to begin:");
     debug("1.Please recheck the connection!");
     debug("2.Please insert the SD card!");
-    while (true)
-    {
+    while (true) {
       digitalWrite(HEALTH_CHECK_LED, HIGH);
       delay(200);
       digitalWrite(HEALTH_CHECK_LED, LOW);
       delay(1000);
     };
-  }
-  else
-  {
+  } else {
     debug("DFPlayer Mini online.");
     digitalWrite(HEALTH_CHECK_LED, HIGH);
   }
@@ -127,23 +113,17 @@ void setup()
 
 unsigned long pause;
 
-void loop()
-{
+void loop() {
   // TODO учесть момент переполнения счётчика миллисекунд
   pause = millis() - lastEncoderSignal;
-  if (pause > PAUSE)
-  {
-    if (isPlaying)
-    {
-      debug("Disbling music after pause " + String(pause));
+  if (pause > PAUSE) {
+    if (isPlaying) {
+      debug("Disabling music after pause " + String(pause));
       isPlaying = false;
       myDFPlayer.pause();
     }
-  }
-  else
-  {
-    if (!isPlaying)
-    {
+  } else {
+    if (!isPlaying) {
       debug("Enabling music after pause " + String(pause));
       isPlaying = true;
       myDFPlayer.play(currentRecord);
